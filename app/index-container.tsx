@@ -5,7 +5,6 @@ import * as fetch from 'isomorphic-fetch';
 import AutoCompleteDisplay from './address-autocomplete-display';
 import MilesLimitDisplay from './input-miles-display';
 
-const distanceList = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100+"];
 const selectSide = ["Select","East", "west"];
 interface IAutoComplete {
     place_id: string;
@@ -18,7 +17,6 @@ interface IAutoCompleteList {
     cityplace_id: string;
     miles: string;
     cityDescription: string;
-    sideSelect: string;
 }
 
 const script = "http://maps.googleapis.com/maps/api/js?libraries=places";
@@ -32,7 +30,6 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
             autoFillList: new Array<IAutoComplete>(),
             cityplace_id: "",
             miles: "",
-            sideSelect: "",
             cityDescription:""
         }
         this.fetchFromAPI = this.fetchFromAPI.bind(this);
@@ -51,7 +48,11 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
             });
         })
     }
-
+    handlemiles(mile:any):void{
+        this.setState({
+                miles: mile
+            });
+    }
     handleInputChange(eve: any): void {
         var inputText = eve.target.value as string;
         var autoCompleteUrl = "/autofillcities?input=" + inputText;
@@ -76,43 +77,13 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
         var placeId = this.state.cityplace_id;
         var milesSelected = this.state.miles;
         var cityDescription = this.state.cityDescription;
-        var isEast = this.state.sideSelect == "East" || this.state.sideSelect == undefined;
-        var url = "route/index?cityDescription=" + cityDescription + "&miles=" + milesSelected + "&east=" + isEast;
+        var url = "route/index?cityDescription=" + cityDescription + "&miles=" + milesSelected;
         window.open(url, '_blank');
-        //this.fetchFromAPI(url);
+        this.fetchFromAPI(url);
         //this.fetchPOST(url,
         //    { "cityDescription": cityDescription, "miles": milesSelected, "east": isEast});
     }
 
-    //fetchPOST(apiUrl: string,data:any): void
-    //{
-    //    fetch(apiUrl, {
-    //        method: "POST",
-    //        body: JSON.stringify(data),
-    //        headers: {
-    //            "Content-Type": "application/json"
-    //        }
-    //    }).then(response => {
-    //        if (response.status >= 200 && response.status < 300) {
-    //            console.log("Success");
-    //        }
-    //        return response.json();
-    //    }).then(body => {
-
-    //    });
-    //}
-    dropdownChange(e: any): void {
-        var milesValue = e.target.value;
-        this.setState({
-            miles: milesValue
-        });
-    }
-    dropdownSideChange(e: any): void {
-        var sideValue = e.target.value;
-        this.setState({
-            sideSelect: sideValue
-        });
-    }
     fetchGeoLocation(apiUrl: string): void {
         fetch(apiUrl).then(response => {
             if (response.status >= 200 && response.status < 300)
@@ -175,11 +146,7 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
                 </div>
                 
                 <div className="form-component">
-                    <select className="form-container-dropdown" onChange={this.dropdownChange.bind(this)}>
-                        {distanceList.map(item =>
-                            <MilesLimitDisplay miles={item} />
-                        )}
-                    </select>
+                    <input type="text" className="form-container-textbox" onchange={this.handlemiles.bind(this)} id="miles-text" placeholder="Miles" ref="miles" />
                 </div>
                 <div className="form-component">
                     <button className="form-container-button" onClick={this.buttonSubmit.bind(this)}>Submit</button>
