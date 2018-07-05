@@ -3,34 +3,49 @@ import * as React from 'react';
 import * as _ from 'lodash';
 import * as fetch from 'isomorphic-fetch';
 import AutoCompleteDisplay from './address-autocomplete-display';
-import MilesLimitDisplay from './input-miles-display';
+import MapContainer from './map-container';
 
 const selectSide = ["Select","East", "west"];
 interface IAutoComplete {
     place_id: string;
     description: string;
+    latitude:string;
+    longitude:string;
 }
- 
+
+interface ICoordinate{
+    lat: number;
+    long: number;
+}
+
 interface IAutoCompleteList {
     autoFillList: Array<IAutoComplete>;
+    coordinateList: Array<ICoordinate>;
     displayList: boolean;
+    displayMap:boolean;
     cityplace_id: string;
     miles: string;
     cityDescription: string;
+    latitude: string;
+    longitude: string;
 }
 
 const script = "http://maps.googleapis.com/maps/api/js?libraries=places";
 
 
-class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
+class IndexContainer extends React.Component<any, IAutoCompleteList>{
     constructor(props: any) {
         super(props)
         this.state = {
             displayList: false,
             autoFillList: new Array<IAutoComplete>(),
+            coordinateList: new Array<ICoordinate>(),
+            displayMap:false,
             cityplace_id: "",
             miles: "",
-            cityDescription:""
+            cityDescription:"",
+            latitude:"",
+            longitude: ""
         }
         this.fetchFromAPI = this.fetchFromAPI.bind(this);
     }
@@ -42,15 +57,25 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
             }
             return response.json();
         }).then(body => {
-            this.setState({
-                autoFillList: body,
-                displayList: true
-            });
+            if(apiUrl.indexOf("Submit") !== -1)
+            {
+                this.setState({
+                    coordinateList: body,
+                    displayMap:true
+                })
+            }else
+            {
+                this.setState({
+                    autoFillList: body,
+                    displayList: true
+                });
+            }
         })
     }
-    handlemiles(mile:any):void{
+    handlemiles(eve:any):void{
+        var inputText = eve.target.value as string;
         this.setState({
-                miles: mile
+                miles: inputText
             });
     }
     handleInputChange(eve: any): void {
@@ -69,19 +94,21 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
             this.setState({
                 autoFillList: new Array<IAutoComplete>(),
                 cityplace_id: placeId,
-                cityDescription: autoPlace[0].description
+                cityDescription: autoPlace[0].description,
+                latitude: autoPlace[0].latitude,
+                longitude: autoPlace[0].longitude
             });
         }
     }
-    buttonSubmit(): void {
+    buttonSubmit(): boolean {
+        var cityDescription = this.state.cityDescription;
         var placeId = this.state.cityplace_id;
         var milesSelected = this.state.miles;
-        var cityDescription = this.state.cityDescription;
-        var url = "route/index?cityDescription=" + cityDescription + "&miles=" + milesSelected;
-        window.open(url, '_blank');
+        var latitude= this.state.latitude;
+        var longitude = this.state.longitude;
+        var url = "/Submit?cityDescription=" + cityDescription + "&miles=" + milesSelected+"&latitude="+latitude+"&longitude="+longitude;
         this.fetchFromAPI(url);
-        //this.fetchPOST(url,
-        //    { "cityDescription": cityDescription, "miles": milesSelected, "east": isEast});
+        return false;
     }
 
     fetchGeoLocation(apiUrl: string): void {
@@ -144,12 +171,15 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
                         (<div></div>)
                     }
                 </div>
+                <div>
+                
+                </div>
                 
                 <div className="form-component">
-                    <input type="text" className="form-container-textbox" onchange={this.handlemiles.bind(this)} id="miles-text" placeholder="Miles" ref="miles" />
+                    <input type="text" className="form-container-textbox" onChange={this.handlemiles.bind(this)} id="miles-text" placeholder="Miles" ref="miles" />
                 </div>
                 <div className="form-component">
-                    <button className="form-container-button" onClick={this.buttonSubmit.bind(this)}>Submit</button>
+                    <a href="" className="form-container-button" onClick={this.buttonSubmit.bind(this)}>Submit</a>
                 </div>
             </div>
         );
@@ -157,4 +187,4 @@ class HomeFormContainer extends React.Component<any, IAutoCompleteList>{
 
 }
 
-export default HomeFormContainer;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+export default IndexContainer;

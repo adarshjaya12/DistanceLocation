@@ -1,6 +1,6 @@
 import googleapi,apiclient
 from dto.autocomplete import AutoComplete,AutoCompleteJson,Prediction
-from dto.geocoding import GeoCoding,Result,AddressComponent,CityModel
+from dto.geocoding import GeoCoding,Result,AddressComponent,CityModel,Location
 
 def getAutoCompelte(text):
 	autoUrl = googleapi.AUTO_COMPLETE.format(text)
@@ -14,6 +14,12 @@ def getAutoCompelte(text):
 
 	return resultList
 
+def getLatAndLong(address):
+	autoUrl = googleapi.GEO_CODING.format(address)
+	result = apiclient.get_call(autoUrl)
+	geoCoding = GeoCoding(**result)
+	location = geoCoding.results[0]["geometry"]["location"]
+	return Location(**location)
 
 def getCityModelFromGeo(lat,longi):
 	autoUrl = googleapi.REVERSE_GEO_CODING.format(lat,longi)
@@ -24,4 +30,6 @@ def getCityModelFromGeo(lat,longi):
 	stateFilter = next(x for x in address_compList for y in x.types  if y == "administrative_area_level_1" )
 	countryFilter = next(x for x in address_compList for y in x.types if y == "country")
 	place_id = geoCoding.results[0]["place_id"]
-	return CityModel(place_id,cityFilter.long_name,stateFilter.short_name,countryFilter.short_name)
+	lati = geoCoding.results[0]["geometry"]["location"].lat
+	longi = geoCoding.results[0]["geometry"]["location"].lng
+	return CityModel(place_id,cityFilter.long_name,stateFilter.short_name,countryFilter.short_name,lati,longi)

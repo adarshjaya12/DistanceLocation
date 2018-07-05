@@ -15,20 +15,30 @@ class AddressComponent:
 		self.short_name = short_name
 		self.types = types
 
+class Location:
+	def __init__(self,lat,lng):
+		self.latitude = lat
+		self.longitude = lng
+
 
 class CityModel:
-	def __init__(self, placeid, city, state, country):
+	def __init__(self, placeid, city, state, country,latitude,longitude):
 		self.placeid = placeid
 		self.city = city
 		self.state = state
 		self.country = country
+		self.latitude = latitude
+		self.longitude =longitude
 
 	def serialize(self):
 		return{
 			'place_id' : self.placeid,
 			'city' : self.city,
 			'state' : self.state,
-			'country':self.country
+			'country':self.country,
+			'latitude':self.latitude,
+			'longitude':self.longitude
+
 		}
 
 
